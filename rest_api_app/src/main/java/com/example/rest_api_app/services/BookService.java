@@ -5,27 +5,22 @@ import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.example.rest_api_app.dao.BookRepository;
 import com.example.rest_api_app.model.Book;
 
 
 @Component
 public class BookService {
 
-    private static List<Book> list = new ArrayList<>();
-    static {
-
-        list.add(new Book(12, "Python course", "Sunil"));
-        list.add(new Book(13, "HTML", "Ramesh"));
-        list.add(new Book(14, "CSS", "Arun"));
-        list.add(new Book(15, "Javascript", "akash"));
-        System.out.println("All variables are initializedd");
-
-    }
+    @Autowired
+    private BookRepository bookRepository;
     
 // get all books
 public List<Book> getAllBooks() {
+    List<Book> list=(List<Book>)this.bookRepository.findAll();
     return list;
 
 }
@@ -33,35 +28,29 @@ public List<Book> getAllBooks() {
 // get a single book
 public Book getBookById(int id) {
 
-    Book book = null;
-    book = list.stream().filter(e -> e.getId() == id).findFirst().get();
-    return book;
+    Book b = null;
+    try {
+        b = this.bookRepository.findById(id);
+        return b; 
+        
+    } catch (Exception e) {
+        e.printStackTrace();
+        return b;
+    }
 }
     
 public Book addBook(Book book) {
-    list.add(book);
-    System.out.println("book added successfully");
-    System.out.println(list);
-    return book;
+    Book b=this.bookRepository.save(book);  
+    return b;
 }
 
 public void deleteBook(int id) {
-    list=list.stream().filter(b->{
-        if(b.getId()!=id)
-            return true;
-        else
-            return false;
-    }).collect(Collectors.toList());
+    bookRepository.deleteById(id);
 }
 
-public Book updateBook(Book book ,int id) {
-    list = list.stream().map(b -> {
-        if (b.getId() == id)
-            b.setTitle(book.getTitle());
-            b.setAuthor(book.getAuthor());
-            return b;
-    }).collect(Collectors.toList());
-         
+public Book updateBook(Book book, int id) {
+    book.setId(id);
+    bookRepository.save(book);
     return book;
 }
 
